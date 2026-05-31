@@ -1,0 +1,12 @@
+{
+  "name": "cicd-k8s-app",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "jest --forceExit"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
