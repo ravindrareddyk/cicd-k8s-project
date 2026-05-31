@@ -70,20 +70,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.8.0
+        with:
+          cluster_name: cicd-cluster
 
-      - name: Configure kubeconfig
+      - name: Verify cluster is running
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Pull image from Docker Hub
+        run: docker pull ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+
+      - name: Load image into kind cluster
+        run: kind load docker-image ${{ env.IMAGE_NAME }}:sha-${{ github.sha }} --name cicd-cluster
+
+      - name: Update deployment image tag
+        run: |
+          sed -i "s|YOUR_DOCKERHUB_USERNAME/cicd-demo-app:latest|${{ env.IMAGE_NAME }}:sha-${{ github.sha }}|g" k8s/deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/cicd-demo-app cicd-demo-app=${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
 
       - name: Verify rollout
         run: kubectl rollout status deployment/cicd-demo-app --timeout=120s
 
       - name: Show running pods
         run: kubectl get pods -l app=cicd-demo-app
+
+      - name: Show all resources
+        run: kubectl get all
