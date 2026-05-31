@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: cicd-demo-app
-          image: YOUR_DOCKERHUB_USERNAME/cicd-demo-app:latest
+          image: ravindrareddk/cicd-demo-app:latest
           ports:
             - containerPort: 3000
           livenessProbe:
