@@ -81,8 +81,8 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/cicd-demo-app \
-            cicd-demo-app=${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
-            --record
+            cicd-demo-app=${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+	  	  
 
       - name: Verify rollout
         run: kubectl rollout status deployment/cicd-demo-app --timeout=120s
