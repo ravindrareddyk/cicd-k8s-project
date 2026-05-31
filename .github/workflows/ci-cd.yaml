@@ -90,12 +90,20 @@ jobs:
       - name: Update deployment image tag
         run: |
           sed -i "s|ravindrareddyk/cicd-demo-app:latest|${{ env.IMAGE_NAME }}:${{ steps.set-tag.outputs.tag }}|g" k8s/deployment.yaml
-          cat k8s/deployment.yaml
+
+      - name: Verify image replaced correctly
+        run: cat k8s/deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
+
+      - name: Wait for pods to be ready
+        run: |
+          kubectl wait --for=condition=ready pod \
+            -l app=cicd-demo-app \
+            --timeout=120s
 
       - name: Verify rollout
         run: kubectl rollout status deployment/cicd-demo-app --timeout=120s
